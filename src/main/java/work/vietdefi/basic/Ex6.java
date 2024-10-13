@@ -3,7 +3,7 @@ package work.vietdefi.basic;
 public class Ex6 {
     public int FactorialTest(int n) {
         if (n < 0) {
-            throw new IllegalArgumentException("Không thể tính giai thừa của số âm");
+            throw new IllegalArgumentException("Cannot calculate factorial of negative numbers");
         }
 
         int factorial = 1;
