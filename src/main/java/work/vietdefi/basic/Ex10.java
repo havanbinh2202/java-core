@@ -2,7 +2,7 @@ package work.vietdefi.basic;
 
 public class Ex10 {
     /**
-     * Reverse a string
+     * Check if the input number is prime or not
      *
      * @param n: input the number to check
      * @return true if input is a perfect number;   false if input is not a perfect number
