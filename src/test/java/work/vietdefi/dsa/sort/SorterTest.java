@@ -41,4 +41,13 @@ public class SorterTest {
         int[] SortedArray = {1, 3, 4, 5, 7, 11, 15};
         assertArrayEquals(SortedArray, sorter.sort(unsortedArray));
     }
+
+    @Test
+    @DisplayName("Test HeapSort")
+    public void testHeapSort() {
+        Sorter sorter = new HeapSorter();
+        int[] unsortedArray = {3, 7, 5, 1, 4, 15,11};
+        int[] SortedArray = {1, 3, 4, 5, 7, 11, 15};
+        assertArrayEquals(SortedArray, sorter.sort(unsortedArray));
+    }
 }
