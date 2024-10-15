@@ -50,4 +50,13 @@ public class SorterTest {
         int[] SortedArray = {1, 3, 4, 5, 7, 11, 15};
         assertArrayEquals(SortedArray, sorter.sort(unsortedArray));
     }
+
+    @Test
+    @DisplayName("Test QuickSort")
+    public void testQuickSort() {
+        Sorter sorter = new QuickSort();
+        int[] unsortedArray = {3, 7, 5, 1, 4, 15, 11};
+        int[] sortedArray = {1, 3, 4, 5, 7, 11, 15};
+        assertArrayEquals(sortedArray, sorter.sort(unsortedArray));
+    }
 }
