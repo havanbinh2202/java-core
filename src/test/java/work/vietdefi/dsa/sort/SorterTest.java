@@ -32,6 +32,14 @@ public class SorterTest {
         int[] SortedArray = {1, 3, 4, 5, 7, 11, 15};
         assertArrayEquals(SortedArray, sorter.sort(unsortedArray));
     }
+    @Test
+    @DisplayName("Test SwapSort")
+    public void testSwapSort() {
+        Sorter sorter = new SwapSort();
+        int[] unsortedArray = {3, 7, 5, 1, 4, 10, 8, 9, 2, 6};
+        int[] sortedArray = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        assertArrayEquals(sortedArray, sorter.sort(unsortedArray));
+    }
 
     @Test
     @DisplayName("Test MergeSort")
