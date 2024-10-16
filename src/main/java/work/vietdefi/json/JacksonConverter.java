@@ -50,7 +50,6 @@ public class JacksonConverter implements IJacksonConverter{
         } catch (JsonProcessingException e){
             e.printStackTrace();
             return null;
-
         }
     }
 }
