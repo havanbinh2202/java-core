@@ -4,20 +4,22 @@ public class SelectionSorter implements Sorter{
     @Override
     public int[] sort(int[] values) {
         int n = values.length;
-        int[] sortedValues = values.clone(); // Tạo bản sao của mảng để sắp xếp
+        int[] sortedValues = values.clone();
         for (int i = 0; i < n - 1; i++) {
-            // Tìm chỉ số của phần tử nhỏ nhất trong phần chưa sắp xếp
+            //
+            //Find the index of the smallest element in the unsorted section
             int minIndex = i;
             for (int j = i + 1; j < n; j++) {
                 if (sortedValues[j] < sortedValues[minIndex]) {
-                    minIndex = j; // Cập nhật chỉ số của phần tử nhỏ nhất
+                        minIndex = j; // Update the index of the smallest element
+
                 }
             }
-            // Hoán đổi phần tử nhỏ nhất với phần tử đầu tiên của phần chưa sắp xếp
+            // Swap the smallest element with the first element of the unsorted section
             int temp = sortedValues[minIndex];
             sortedValues[minIndex] = sortedValues[i];
             sortedValues[i] = temp;
         }
-        return sortedValues; // Trả về mảng đã sắp xếp
+        return sortedValues;
     }
 }

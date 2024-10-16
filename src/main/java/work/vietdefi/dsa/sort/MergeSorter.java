@@ -10,7 +10,8 @@ public class MergeSorter implements Sorter {
     @Override
     public int[] sort(int[] values) {
         if (values.length < 2) {
-            return values.clone(); // Trả về mảng đã cho nếu có ít hơn 2 phần tử
+            return values.clone(); // Returns the given array if there are less than 2 elements
+
         }
 
         int mid = values.length / 2;
@@ -23,15 +24,15 @@ public class MergeSorter implements Sorter {
             right = new int[mid + 1];
         }
 
-        // Tách mảng thành hai nửa
+        // Split the array into two halves
         System.arraycopy(values, 0, left, 0, mid);
         System.arraycopy(values, mid, right, 0, right.length);
 
-        // Đệ quy sắp xếp hai nửa
+        // Recursively sort the two halves
         left = sort(left);
         right = sort(right);
 
-        // Gộp lại và trả về mảng đã sắp xếp
+        // Combine and return the sorted array
         return merge(left, right);
     }
 
@@ -46,7 +47,7 @@ public class MergeSorter implements Sorter {
         int[] merged = new int[left.length + right.length];
         int i = 0, j = 0, k = 0;
 
-        // Gộp hai mảng đã sắp xếp
+        // Merge two sorted arrays
         while (i < left.length && j < right.length) {
             if (left[i] <= right[j]) {
                 merged[k++] = left[i++];
@@ -55,12 +56,12 @@ public class MergeSorter implements Sorter {
             }
         }
 
-        // Sao chép phần còn lại của mảng trái
+        // Copy the rest of the left array
         while (i < left.length) {
             merged[k++] = left[i++];
         }
 
-        // Sao chép phần còn lại của mảng phải
+        // Copy the rest of the right array
         while (j < right.length) {
             merged[k++] = right[j++];
         }
