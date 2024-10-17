@@ -10,48 +10,51 @@ public class SqlJavaBridge {
     private Connection connection;
 
     public SqlJavaBridge(HikariClient hikariClient) throws SQLException {
-        this.connection = hikariClient.getConnection(); // Lấy kết nối từ HikariClient
+        this.connection = hikariClient.getConnection(); // Get connection from HikariClient
     }
 
     /**
-     * Kiểm tra sự tồn tại của một bảng trong cơ sở dữ liệu.
+     * Check the existence of a table in the database.
      *
-     * @param tableName Tên của bảng cần kiểm tra.
-     * @return true nếu bảng tồn tại, false nếu không.
-     * @throws SQLException Nếu có lỗi xảy ra trong quá trình truy vấn.
+     * @param tableName Name of the table to check.
+     * @return true if the table exists, false otherwise.
+     * @throws SQLException If an error occurs during the query.
      */
     public boolean checkTableExisting(String tableName) throws SQLException {
         ResultSet resultSet = null;
         try (Statement statement = connection.createStatement()) {
             resultSet = statement.executeQuery("SHOW TABLES LIKE '" + tableName + "'");
-            return resultSet.next(); // Nếu có kết quả, bảng tồn tại
+            return resultSet.next(); // If there is a result, the table exists
+
         } finally {
             if (resultSet != null) {
-                resultSet.close(); // Đảm bảo đóng ResultSet
+                resultSet.close(); // Make sure to close ResultSet
+
             }
         }
     }
 
     /**
-     * Tạo một bảng trong cơ sở dữ liệu.
+     * Create a table in the database.
      *
-     * @param createTableSQL Câu lệnh SQL để tạo bảng.
-     * @return true nếu bảng được tạo thành công, false nếu không.
-     * @throws SQLException Nếu có lỗi xảy ra trong quá trình thực thi câu lệnh.
+     * @param createTableSQL SQL statement to create table.
+     * @return true if the table was created successfully, false otherwise.
+     * @throws SQLException If an error occurs during command execution.
      */
     public boolean createTable(String createTableSQL) throws SQLException {
         try (Statement statement = connection.createStatement()) {
-            return statement.executeUpdate(createTableSQL) == 0; // Nếu không có lỗi, trả về true
+            return statement.executeUpdate(createTableSQL) == 0; // If there are no errors, return true
+
         }
     }
 
     /**
-     * Chèn một bản ghi vào bảng và trả về khóa chính được tạo.
+     * Inserts a record into the table and returns the generated primary key.
      *
-     * @param insertSQL Câu lệnh SQL để chèn bản ghi.
-     * @param params    Tham số cho câu lệnh chèn.
-     * @return Khóa chính được tạo, hoặc null nếu không thành công.
-     * @throws SQLException Nếu có lỗi xảy ra trong quá trình thực thi.
+     * @param insertSQL SQL statement to insert records.
+     * @param params Parameters for the insert statement.
+     * @return Primary key created, or null if failed.
+     * @throws SQLException If an error occurred during execution.
      */
     public Object insert(String insertSQL, Object... params) throws SQLException {
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertSQL, Statement.RETURN_GENERATED_KEYS)) {
@@ -61,37 +64,40 @@ public class SqlJavaBridge {
             preparedStatement.executeUpdate();
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
             if (generatedKeys.next()) {
-                return generatedKeys.getObject(1); // Trả về khóa chính được tạo
+                return generatedKeys.getObject(1); // Returns the generated primary key
+
             } else {
-                return null; // Không có khóa chính được tạo
+                return null; // No primary key is created
+
             }
         }
     }
 
     /**
-     * Cập nhật một bản ghi trong bảng.
+     * Update a record in the table.
      *
-     * @param updateSQL Câu lệnh SQL để cập nhật bản ghi.
-     * @param params    Tham số cho câu lệnh cập nhật.
-     * @return Số lượng hàng bị ảnh hưởng.
-     * @throws SQLException Nếu có lỗi xảy ra trong quá trình thực thi.
+     * @param updateSQL SQL statement to update the record.
+     * @param params Parameters for the update command.
+     * @return Number of rows affected.
+     * @throws SQLException If an error occurred during execution.
      */
     public int update(String updateSQL, Object... params) throws SQLException {
         try (PreparedStatement preparedStatement = connection.prepareStatement(updateSQL)) {
             for (int i = 0; i < params.length; i++) {
                 preparedStatement.setObject(i + 1, params[i]);
             }
-            return preparedStatement.executeUpdate(); // Trả về số lượng hàng bị ảnh hưởng
+            return preparedStatement.executeUpdate(); // Returns the number of rows affected
+
         }
     }
 
     /**
-     * Truy vấn một bản ghi từ bảng dựa trên ID.
+     * Query a record from a table based on ID.
      *
-     * @param querySQL Câu lệnh SQL để truy vấn bản ghi.
-     * @param params   Tham số cho câu lệnh truy vấn.
-     * @return Đối tượng JsonObject đại diện cho bản ghi.
-     * @throws SQLException Nếu có lỗi xảy ra trong quá trình thực thi.
+     * @param querySQL SQL statement to query records.
+     * @param params Parameters for the query statement.
+     * @return The JsonObject representing the record.
+     * @throws SQLException If an error occurred during execution.
      */
     public JsonObject queryOne(String querySQL, Object... params) throws SQLException {
         try (PreparedStatement preparedStatement = connection.prepareStatement(querySQL)) {
@@ -106,18 +112,20 @@ public class SqlJavaBridge {
                 for (int i = 1; i <= columnCount; i++) {
                     jsonObject.addProperty(metaData.getColumnName(i), resultSet.getString(i));
                 }
-                return jsonObject; // Trả về đối tượng JsonObject
+                return jsonObject; // Returns the JsonObject object
+
             }
         }
-        return null; // Nếu không có bản ghi nào được tìm thấy
+        return null; // If no records are found
+
     }
 
     /**
-     * Truy vấn tất cả các bản ghi từ bảng.
+     * Query all records from the table.
      *
-     * @param querySQL Câu lệnh SQL để truy vấn.
-     * @return Mảng JsonArray chứa tất cả các bản ghi.
-     * @throws SQLException Nếu có lỗi xảy ra trong quá trình thực thi.
+     * @param querySQL SQL statement to query.
+     * @return JsonArray containing all records.
+     * @throws SQLException If an error occurred during execution.
      */
     public JsonArray queryArray(String querySQL) throws SQLException {
         JsonArray jsonArray = new JsonArray();
@@ -130,20 +138,23 @@ public class SqlJavaBridge {
                 for (int i = 1; i <= columnCount; i++) {
                     jsonObject.addProperty(metaData.getColumnName(i), resultSet.getString(i));
                 }
-                jsonArray.add(jsonObject); // Thêm đối tượng vào JsonArray
+                jsonArray.add(jsonObject); // Add objects to JsonArray
+
             }
         }
-        return jsonArray; // Trả về JsonArray chứa tất cả các bản ghi
+        return jsonArray; // Returns a JsonArray containing all records
+
     }
 
     /**
-     * Đóng kết nối đến cơ sở dữ liệu.
+     * Close the connection to the database.
      *
-     * @throws SQLException Nếu có lỗi xảy ra trong quá trình đóng kết nối.
+     * @throws SQLException If an error occurred while closing the connection.
      */
     public void close() throws SQLException {
         if (connection != null && !connection.isClosed()) {
-            connection.close(); // Đóng kết nối
+            connection.close(); // Close the connection
+
         }
     }
 }
