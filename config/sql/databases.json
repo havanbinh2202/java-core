@@ -1,0 +1,7 @@
+{
+  "jdbcUrl": "jdbc:mariadb://127.0.0.1/java_sql",
+  "dataSource.database": "java_sql",
+  "dataSource.user": "root",
+  "dataSource.password": "",
+  "other.config.file": "config/sql/hikari.properties"
+}
