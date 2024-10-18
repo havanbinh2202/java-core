@@ -1,5 +1,6 @@
 package work.vietdefi.sql;
 
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import java.sql.ResultSet;
@@ -11,7 +12,6 @@ import java.sql.SQLException;
  * It provides methods for checking tables, creating them, performing queries,
  * converting query results to JSON, and executing inserts/updates.
  */
-
 public interface ISQLJavaBridge {
 
 
@@ -106,5 +106,4 @@ public interface ISQLJavaBridge {
      * </p>
      */
     void close();
-
 }

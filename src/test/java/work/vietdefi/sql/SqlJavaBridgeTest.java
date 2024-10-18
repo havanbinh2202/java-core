@@ -40,7 +40,7 @@ public class SqlJavaBridgeTest {
      * and then confirms its existence.
      */
     @Test
-    void testCheckTableExistsAndCreateTable() throws SQLException {
+    void testCheckTableExistsAndCreateTable() {
         String tableName = "test_table"; // Name of the table to be tested
 
 
