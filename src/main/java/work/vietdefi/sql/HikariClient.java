@@ -1,12 +1,12 @@
 package work.vietdefi.sql;
 
+
 import com.google.gson.JsonObject;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import work.vietdefi.json.GsonConverter;
 
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -21,7 +21,6 @@ import java.util.Properties;
  * HikariClient is a utility class that manages database connections using HikariCP,
  * a high-performance JDBC connection pool.
  */
-
 public class HikariClient {
     public HikariDataSource dataSource;  // Manages the pool of database connections.
 
@@ -51,7 +50,7 @@ public class HikariClient {
 
 
         // Load additional HikariCP properties from another config file.
-        InputStream input = new FileInputStream(poolConfigFile);
+        InputStream input = Files.newInputStream(Paths.get(poolConfigFile));
         Properties prop = new Properties();
 
 
@@ -83,8 +82,23 @@ public class HikariClient {
      */
     public Connection getConnection() throws SQLException {
         // Get a connection from the pool.
-        Connection connection = dataSource.getConnection();
-        return connection;
+        return dataSource.getConnection();
     }
 
+
+    /**
+     * Closes the HikariDataSource and releases all resources.
+     * <p>
+     * This method should be called when the HikariClient is no longer needed
+     * to ensure that all database connections are closed and resources
+     * are released, preventing memory leaks.
+     * </p>
+     */
+    public void close() {
+        if (dataSource != null) {
+            dataSource.close(); // Close the HikariCP data source
+        }
+    }
 }
+
+
