@@ -39,27 +39,31 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public JsonObject register(String username, String password) {
+    public JsonObject register(String username, String password ) {
+
         String hashedPassword = DigestUtils.sha512Hex(password);
         String checkUserSQL = "SELECT * FROM " + table + " WHERE username = ?";
-
+        String token = RandomStringUtils.randomAlphanumeric(8);
+        long token_expired = System.currentTimeMillis() + (60 * 60 * 1000); // Set token to expire in 1 hour
         try {
             JsonObject existingUser = bridge.queryOne(checkUserSQL, username);
             if (existingUser != null) {
-                    return SimpleResponse.createResponse(10, createMessageJson("Username already exists"));
+                return SimpleResponse.createResponse(10); // Username already exists
             }
 
-            String insertUserSQL = "INSERT INTO " + table + " (username, password) VALUES (?, ?)";
-            Object result = bridge.insert(insertUserSQL, username, hashedPassword);
+            String insertUserSQL = "INSERT INTO " + table + " (username, password, token, token_expired) VALUES (?, ?, ?, ?)";
+            Object result = bridge.insert(insertUserSQL, username, hashedPassword, token, token_expired);
 
             if (result != null) {
-                return SimpleResponse.createResponse(0, createUserJson(username));
+                JsonObject data = new JsonObject();
+                data.addProperty("username", username);
+                return SimpleResponse.createResponse(0,data);
             } else {
-                return SimpleResponse.createResponse(2, createMessageJson("Failed to register user"));
+                return SimpleResponse.createResponse(2);  // Failed to register user
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return SimpleResponse.createResponse(3, createMessageJson("An error has occurred: " + e.getMessage()));
+            return SimpleResponse.createResponse(3); // An error has occurred
         }
 
     }
@@ -71,34 +75,36 @@ public class UserService implements IUserService {
         String query = "SELECT * FROM " + table + " WHERE username = ?";
 
         try {
+            // First, check if the user exists
             JsonObject user = bridge.queryOne(query, username);
-
-            // Check if the user exists
             if (user == null) {
-                // User not found, return error for invalid username
-                return SimpleResponse.createResponse(10, createMessageJson("Invalid username"));
+                return SimpleResponse.createResponse(10); // Invalid username
             }
 
-            // Check if the password matches
+            // If user exists, check the password
             if (!user.get("password").getAsString().equals(hashedPassword)) {
-                // Password does not match, return error for invalid password
-                return SimpleResponse.createResponse(11, createMessageJson("Invalid password"));
+                return SimpleResponse.createResponse(11); // Incorrect password
             }
 
-            // If authentication is successful, generate a token
+            // Generate a token and set expiration
             String token = RandomStringUtils.randomAlphanumeric(8);
-            long tokenExpired = System.currentTimeMillis() + (60 * 60 * 1000); // Set token to expire in 1 hour
+            long token_expired = System.currentTimeMillis() + (60 * 60 * 1000); // 1 hour expiration
 
+            // Update token and expiration in the database
             String updateTokenSQL = "UPDATE " + table + " SET token = ?, token_expired = ? WHERE username = ?";
-            bridge.update(updateTokenSQL, token, tokenExpired, username);
+            bridge.update(updateTokenSQL, token, token_expired, username);
 
-            JsonObject data = createUserJson(username, token);
-            return SimpleResponse.createResponse(0, data);
+            JsonObject data = new JsonObject();
+            data.addProperty("username", user.get("username").getAsString());
+            data.addProperty("token", token);
+            return SimpleResponse.createResponse(0, data); // Success
         } catch (Exception e) {
             e.printStackTrace();
-            return SimpleResponse.createResponse(3, createMessageJson("An error has occurred: " + e.getMessage()));
+            return SimpleResponse.createResponse(3); // An error has occurred
         }
     }
+
+
 
     @Override
     public JsonObject authorization(String token) {
@@ -109,44 +115,23 @@ public class UserService implements IUserService {
                 if (user.has("token_expired")) {
                     long tokenExpired = user.get("token_expired").getAsLong();
                     if (System.currentTimeMillis() > tokenExpired) {
-                        return SimpleResponse.createResponse(11, createMessageJson("The token has expired"));
+                        return SimpleResponse.createResponse(11); // The token has expired
                     } else {
-                        JsonObject data = new JsonObject();
-                        data.add("user", user);
-                        return SimpleResponse.createResponse(0, data);
+                        JsonObject json = new JsonObject();
+                        json.add("user", user);
+                        return SimpleResponse.createResponse(0, json);
                     }
                 } else {
-                    return SimpleResponse.createResponse(12, createMessageJson("Token expiration time is missing"));
+                    return SimpleResponse.createResponse(12);  // Token expiration time is missing
                 }
             } else {
-                return SimpleResponse.createResponse(10, createMessageJson("Invalid token"));
+                return SimpleResponse.createResponse(10); // Invalid token
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return SimpleResponse.createResponse(3, createMessageJson("An error has occurred: " + e.getMessage()));
+            return SimpleResponse.createResponse(3); // An error has occurred
         }
     }
 
 
-    // Helper method to create message JsonObject
-    private JsonObject createMessageJson(String message) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("message", message);
-        return jsonObject;
-    }
-
-    // Helper method to create user JsonObject
-    private JsonObject createUserJson(String username) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("username", username);
-        return jsonObject;
-    }
-
-    // Overloaded method to create user JsonObject with token
-    private JsonObject createUserJson(String username, String token) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("username", username);
-        jsonObject.addProperty("token", token);
-        return jsonObject;
-    }
 }

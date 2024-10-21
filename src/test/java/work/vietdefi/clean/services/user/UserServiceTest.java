@@ -57,7 +57,7 @@ public class UserServiceTest {
      */
     @Test
     void testRegisterUser() {
-        String username = "testUser1";
+        String username = "testUsers";
         String password = "password123";
 
 
@@ -67,6 +67,7 @@ public class UserServiceTest {
 
         assertNotNull(response);
         assertTrue(SimpleResponse.isSuccess(response));
+
         JsonObject data = response.getAsJsonObject("d");
         assertEquals(username, data.get("username").getAsString());
         assertNotNull(data);
