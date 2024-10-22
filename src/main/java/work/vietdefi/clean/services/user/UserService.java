@@ -2,10 +2,13 @@ package work.vietdefi.clean.services.user;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import work.vietdefi.log.DebugLogger;
 import work.vietdefi.sql.ISQLJavaBridge;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import work.vietdefi.clean.services.common.SimpleResponse;
+
+import java.math.BigInteger;
 
 public class UserService implements IUserService {
 
@@ -39,53 +42,59 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public JsonObject register(String username, String password ) {
-
-        String hashedPassword = DigestUtils.sha512Hex(password);
-        String checkUserSQL = "SELECT * FROM " + table + " WHERE username = ?";
-        String token = RandomStringUtils.randomAlphanumeric(8);
-        long token_expired = System.currentTimeMillis() + (60 * 60 * 1000); // Set token to expire in 1 hour
+    public JsonObject register(String username, String password) {
         try {
-            JsonObject existingUser = bridge.queryOne(checkUserSQL, username);
-            if (existingUser != null) {
-                return SimpleResponse.createResponse(10); // Username already exists
+            String query = new StringBuilder()
+                    .append("SELECT user_id FROM ")
+                    .append(table)
+                    .append(" WHERE username = ?").toString();
+            JsonObject data = bridge.queryOne(query, username);
+            if(data != null){
+                return SimpleResponse.createResponse(10);
             }
-
-            String insertUserSQL = "INSERT INTO " + table + " (username, password, token, token_expired) VALUES (?, ?, ?, ?)";
-            Object result = bridge.insert(insertUserSQL, username, hashedPassword, token, token_expired);
-
-            if (result != null) {
-                JsonObject data = new JsonObject();
-                data.addProperty("username", username);
-                return SimpleResponse.createResponse(0,data);
-            } else {
-                return SimpleResponse.createResponse(2);  // Failed to register user
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return SimpleResponse.createResponse(3); // An error has occurred
+            String  hashedPassword = DigestUtils.sha512Hex(password);
+            String token = RandomStringUtils.randomAlphanumeric(8);
+            long TOKEN_EXPIRED = 0;
+            long token_expired = System.currentTimeMillis() + TOKEN_EXPIRED;
+            query = new StringBuilder()
+                    .append("INSERT INTO ")
+                    .append(table)
+                    .append(" (username, password, token, token_expired)")
+                    .append(" VALUE (?,?,?,?)")
+                    .toString();
+            BigInteger generatedKey = (BigInteger) bridge.insert(query, username, hashedPassword, token, token_expired);
+            long id = generatedKey.longValue();
+            data = new JsonObject();
+            data.addProperty("user_id", id);
+            data.addProperty("username", username);
+            data.addProperty("token", token);
+            data.addProperty("token_expired", token_expired);
+            return SimpleResponse.createResponse(0, data);
+        }catch (Exception e){
+            DebugLogger.logger.error("", e);
+            return SimpleResponse.createResponse(1);
         }
-
     }
 
 
     @Override
     public JsonObject login(String username, String password) {
-        String hashedPassword = DigestUtils.sha512Hex(password);
-        String query = "SELECT * FROM " + table + " WHERE username = ?";
-
         try {
-            // First, check if the user exists
+            String query = new StringBuilder()
+                    .append(" SELECT * FROM ")
+                    .append(table)
+                    .append(" WHERE username = ? ")
+                    .toString();
             JsonObject user = bridge.queryOne(query, username);
             if (user == null) {
-                return SimpleResponse.createResponse(10); // Invalid username
+                return SimpleResponse.createResponse(10);
             }
 
+            String hashedPassword = DigestUtils.sha512Hex(password);
             // If user exists, check the password
             if (!user.get("password").getAsString().equals(hashedPassword)) {
                 return SimpleResponse.createResponse(11); // Incorrect password
             }
-
             // Generate a token and set expiration
             String token = RandomStringUtils.randomAlphanumeric(8);
             long token_expired = System.currentTimeMillis() + (60 * 60 * 1000); // 1 hour expiration
@@ -97,10 +106,11 @@ public class UserService implements IUserService {
             JsonObject data = new JsonObject();
             data.addProperty("username", user.get("username").getAsString());
             data.addProperty("token", token);
+            data.addProperty("token_expired", token_expired);
             return SimpleResponse.createResponse(0, data); // Success
         } catch (Exception e) {
             e.printStackTrace();
-            return SimpleResponse.createResponse(3); // An error has occurred
+            return SimpleResponse.createResponse(1); // An error has occurred
         }
     }
 
@@ -108,28 +118,26 @@ public class UserService implements IUserService {
 
     @Override
     public JsonObject authorization(String token) {
-        String query = "SELECT * FROM " + table + " WHERE token = ?";
-        try {
+        try{
+            String query = new StringBuilder()
+                    .append("SELECT * FROM ")
+                    .append(table)
+                    .append(" WHERE token = ?")
+                    .toString();
             JsonObject user = bridge.queryOne(query, token);
-            if (user != null) {
-                if (user.has("token_expired")) {
-                    long tokenExpired = user.get("token_expired").getAsLong();
-                    if (System.currentTimeMillis() > tokenExpired) {
-                        return SimpleResponse.createResponse(11); // The token has expired
-                    } else {
-                        JsonObject json = new JsonObject();
-                        json.add("user", user);
-                        return SimpleResponse.createResponse(0, json);
-                    }
-                } else {
-                    return SimpleResponse.createResponse(12);  // Token expiration time is missing
-                }
-            } else {
+            if (user == null) {
                 return SimpleResponse.createResponse(10); // Invalid token
             }
+                long tokenExpired = user.get("token_expired").getAsLong();
+                if (System.currentTimeMillis() > tokenExpired) {
+                    return SimpleResponse.createResponse(11); // The token has expired
+                }
+                JsonObject json = new JsonObject();
+                json.add("user", user);
+                return SimpleResponse.createResponse(0, json);
         } catch (Exception e) {
-            e.printStackTrace();
-            return SimpleResponse.createResponse(3); // An error has occurred
+            DebugLogger.logger.error("", e);
+            return SimpleResponse.createResponse(1); // An error has occurred
         }
     }
 
