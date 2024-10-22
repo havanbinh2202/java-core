@@ -30,6 +30,13 @@ dependencies {
 // https://mvnrepository.com/artifact/commons-codec/commons-codec
     implementation("commons-codec:commons-codec:1.17.1")
 
+    // https://mvnrepository.com/artifact/io.vertx/vertx-web
+    implementation("io.vertx:vertx-web:4.5.10")
+// https://mvnrepository.com/artifact/io.vertx/vertx-core
+    implementation("io.vertx:vertx-core:4.5.10")
+    // https://mvnrepository.com/artifact/io.vertx/vertx-web-client
+    implementation("io.vertx:vertx-web-client:4.5.10")
+
 }
 
 tasks.test {
