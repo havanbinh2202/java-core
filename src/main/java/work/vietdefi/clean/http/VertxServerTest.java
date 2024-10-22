@@ -6,12 +6,12 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
-import io.vertx.junit5.VertxExtension;
+//import io.vertx.junit5.VertxExtension;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+//import org.junit.jupiter.api.extension.ExtendWith;
 import work.vietdefi.clean.services.common.SimpleResponse;
 import work.vietdefi.util.log.DebugLogger;
 
@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * It sets up the logging configuration and starts the server before all tests
  * and contains test methods for validating API responses.
  */
-@ExtendWith(VertxExtension.class)
+//@ExtendWith(VertxExtension.class)
 public class VertxServerTest {
     private static Vertx vertx; // Vertx instance for tests
     private static WebClient client; // Web client to make API calls

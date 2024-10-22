@@ -36,6 +36,7 @@ dependencies {
     implementation("io.vertx:vertx-core:4.5.10")
     // https://mvnrepository.com/artifact/io.vertx/vertx-web-client
     implementation("io.vertx:vertx-web-client:4.5.10")
+    implementation ("org.junit.jupiter:junit-jupiter-api:5.9.2") // Or the latest stable version
 
 }
 
